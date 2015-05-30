@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/home/yakoub/.rvm/rubies/ruby-2.1.2/bin/ruby
 require 'hashids'
 require_relative './offer.rb'
 
@@ -123,7 +123,7 @@ def parse_args(first, second)
       if first.eql? "list"
         handle_list()
       elsif first.eql? "new"
-        handle_new()
+        return handle_new()
       else
         return handle_continue(second)
       end
@@ -135,7 +135,8 @@ end
 
 # A helper method for reading input with a given msg
 def read_with_msg(msg)
-  print "%s:" % msg
+  print "%s: " % msg
+  STDOUT.flush
   res = STDIN.gets.chomp
   if res.nil?
     exit_with_message("You need to enter a value")
