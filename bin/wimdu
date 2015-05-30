@@ -1,4 +1,4 @@
-#!/home/yakoub/.rvm/rubies/ruby-2.1.2/bin/ruby
+#!/usr/bin/ruby
 require 'hashids'
 require_relative './offer.rb'
 
