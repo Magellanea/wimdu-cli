@@ -1,0 +1,7 @@
+development:
+  adapter: mysql
+  user: root
+  password: password
+  database: wimdu_offers
+  host: localhost
+  logger: false

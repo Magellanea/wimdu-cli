@@ -1,0 +1,9 @@
+# emacs files
+*~
+
+## Environment normalisation:
+/.bundle
+/vendor/bundle
+
+# database file
+./config/databases.yml

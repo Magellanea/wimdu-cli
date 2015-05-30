@@ -1,0 +1,135 @@
+#!/usr/bin/ruby
+require 'hashids'
+require_relative './offer.rb'
+
+def completed_records
+  Offer.where.not(phone_number: nil).count
+end
+
+def is_valid_email?(email)
+  email =~ /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
+end
+
+def is_numerical?(val)
+  val.to_i.to_s == val.to_s
+end
+
+def is_float?(val)
+  val.to_f.to_s == val.to_s || is_numerical?(val)
+end
+
+def exit_with_message(s)
+    puts s
+    exit
+end
+
+def handle_new(first)
+  offer = Offer.new
+  # generate a uid
+  hashids = Hashids.new "wimdu salt"
+  id = hashids.encode(Offer.count)
+  offer.uid = id
+  offer.save!
+  puts "Starting with new property %s" % offer.uid
+  offer
+end
+
+def handle_list(uid)
+  if uid.nil?
+    exit_with_message("You need to pass a property id")
+  else
+    offers = Offer.where(uid: uid)
+    if offers.length == 0
+      exit_with_message("No such valid property id: %s" % uid)
+    else
+      return offers[0]
+    end
+  end
+end
+
+def parse_args(first, second)
+    if first.nil?
+      puts "usage: wimdu [new-list-continue] missing params"
+      exit
+    end
+    # first param should be one of the known params
+    if ['new', 'list', 'continue'].include? first
+      if first.eql? "list"
+        offers = completed_records
+        if offers == 0
+          puts "No offers found."
+        else
+          puts "Found %d offer(s)" % offers
+        end
+        exit
+      elsif first.eql? "new"
+        handle_new(first)
+      else
+        return handle_list(second)
+      end
+    else
+      exit_with_message("unknown param should be one of [new-list-continue']")
+    end    
+end
+
+
+def read_with_msg(msg)
+  print "%s:" % msg
+  res = STDIN.gets.chomp
+  if res.nil?
+    exit_with_message("You need to enter a value")
+  end
+  res
+end
+
+def prompt_string(msg)
+  res = read_with_msg(msg)
+  if res.empty?
+    exit_with_message("Not a valid value")
+  end
+  res
+end
+
+
+def prompt_float(msg)
+  res = read_with_msg(msg)
+  if !is_float?(res)
+    exit_with_message("Error: Must be a float")
+  end
+  res
+end
+
+
+def prompt_numerical(msg)
+  res = read_with_msg(msg)
+  if !is_numerical?(res)
+    exit_with_message("Error: Must be a number")
+  end
+  res
+end
+
+
+def prompt_email(msg)
+  res = read_with_msg(msg)
+  if !is_valid_email?(res)
+    exit_with_message("Error: Must be a valid email")
+  end
+  res
+end
+
+# Entry point
+begin
+  offer = parse_args(ARGV[0], ARGV[1])
+  offer.title = offer.title.nil? ? prompt_string("Title") : offer.title
+  offer.address = offer.address.nil? ? prompt_string("Address") : offer.address
+  offer.nightly_rate_eur = offer.nightly_rate_eur.nil? ? prompt_float("Nightly Rate EUR") : offer.nightly_rate_eur
+  offer.max_guests = offer.max_guests.nil? ?  prompt_numerical("Max guests") : offer.max_guests
+  offer.email = offer.email.nil? ? prompt_email("Email") : offer.email
+  offer.phone_number = offer.phone_number.nil? ? prompt_string("phone_number") : offer.phone_number
+  offer.save!
+rescue Interrupt, SystemExit, Exception
+  if !offer.nil?
+    offer.save!
+  end
+  exit
+end
