@@ -219,6 +219,7 @@ begin
   offer.email = offer.email.nil? ? prompt_email("Email") : offer.email
   offer.phone_number = offer.phone_number.nil? ? prompt_string("phone_number") : offer.phone_number
   offer.save!
+  puts "Great job! Listing %s is complete!" % offer.uid
 rescue Interrupt, SystemExit, Exception
   if !offer.nil?
     offer.save!
