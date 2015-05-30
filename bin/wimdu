@@ -2,28 +2,71 @@
 require 'hashids'
 require_relative './offer.rb'
 
+# Returns the number of completed records
+# it depends on the fact that a record
+# is completed only when the last attributes
+# i.e. phone_number is not null
 def completed_records
   Offer.where.not(phone_number: nil).count
 end
 
+
+# A generic validation for email
+# ==== Attributes
+#
+# * +email+ - A string to check whether it represents an email or not
+#
+# ==== Examples
+#    is_valid_email?("welcome") #should return false
+#    is_valid_email?("me@email.com") #should return true
 def is_valid_email?(email)
   email =~ /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
 end
 
+
+# A generic validation for numerical value
+# ==== Attributes
+#
+# * +email+ - A string to check whether it represents an integer or not
+#
+# ==== Examples
+#    is_valid_numerical?("w") #should return false
+#    is_valid_numerical?("2.0") #should return false
+#    is_valid_numerical?("2") #should return true
 def is_numerical?(val)
   val.to_i.to_s == val.to_s
 end
 
+# A generic validation for float value
+# ==== Attributes
+#
+# * +email+ - A string to check whether it represents a float or not
+#
+# ==== Examples
+#    is_valid_float?("w") #should return false
+#    is_valid_float?("2.0") #should return true
 def is_float?(val)
   val.to_f.to_s == val.to_s || is_numerical?(val)
 end
 
+
+# A helper method that prints a string to STDOUT and issue SystemExit
+# ==== Attributes
+#
+# * +s+ - A msg to print before issuing SystemExit
+#
+# ==== Examples
+#    is_valid_float?("w") #should return false
+#    is_valid_float?("2.0") #should return true
 def exit_with_message(s)
     puts s
     exit
 end
 
-def handle_new(first)
+
+# A helper method that generates an offer for a new property
+# the method returns the offer object
+def handle_new()
   offer = Offer.new
   # generate a uid
   hashids = Hashids.new "wimdu salt"
@@ -34,7 +77,13 @@ def handle_new(first)
   offer
 end
 
-def handle_list(uid)
+# A helper method that handles the continue option for a uid
+# if the uid is valid it returns the offer, else it issues SystemExit
+# ==== Attributes
+#
+# * +uid+ - The UID for the offer, returned upon creation.
+#
+def handle_continue(uid)
   if uid.nil?
     exit_with_message("You need to pass a property id")
   else
@@ -47,6 +96,7 @@ def handle_list(uid)
   end
 end
 
+# A helper method for parsing args passed to process
 def parse_args(first, second)
     if first.nil?
       puts "usage: wimdu [new-list-continue] missing params"
@@ -65,7 +115,7 @@ def parse_args(first, second)
       elsif first.eql? "new"
         handle_new(first)
       else
-        return handle_list(second)
+        return handle_continue(second)
       end
     else
       exit_with_message("unknown param should be one of [new-list-continue']")
@@ -73,6 +123,7 @@ def parse_args(first, second)
 end
 
 
+# A helper method for reading input with a given msg
 def read_with_msg(msg)
   print "%s:" % msg
   res = STDIN.gets.chomp
@@ -82,6 +133,13 @@ def read_with_msg(msg)
   res
 end
 
+# A helper method that reads an input and validates it's string
+# if the value is not valid it issues a SystemExit
+# if the uid is valid it returns the offer, else it issues SystemExit
+# ==== Attributes
+#
+# * +msg+ - The title msg that prints on prompt input
+#
 def prompt_string(msg)
   res = read_with_msg(msg)
   if res.empty?
@@ -91,6 +149,13 @@ def prompt_string(msg)
 end
 
 
+# A helper method that reads an input and validates it's float
+# if the value is not valid it issues a SystemExit
+# if the uid is valid it returns the offer, else it issues SystemExit
+# ==== Attributes
+#
+# * +msg+ - The title msg that prints on prompt input
+#
 def prompt_float(msg)
   res = read_with_msg(msg)
   if !is_float?(res)
@@ -100,6 +165,14 @@ def prompt_float(msg)
 end
 
 
+
+# A helper method that reads an input and validates it's numerical
+# if the value is not valid it issues a SystemExit
+# if the uid is valid it returns the offer, else it issues SystemExit
+# ==== Attributes
+#
+# * +msg+ - The title msg that prints on prompt input
+#
 def prompt_numerical(msg)
   res = read_with_msg(msg)
   if !is_numerical?(res)
@@ -109,6 +182,14 @@ def prompt_numerical(msg)
 end
 
 
+
+# A helper method that reads an input and validates it's a valid email
+# if the value is not valid it issues a SystemExit
+# if the uid is valid it returns the offer, else it issues SystemExit
+# ==== Attributes
+#
+# * +msg+ - The title msg that prints on prompt input
+#
 def prompt_email(msg)
   res = read_with_msg(msg)
   if !is_valid_email?(res)
