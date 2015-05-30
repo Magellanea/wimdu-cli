@@ -7,7 +7,7 @@ require_relative './offer.rb'
 # is completed only when the last attributes
 # i.e. phone_number is not null
 def completed_records
-  Offer.where.not(phone_number: nil).count
+  Offer.where.not(phone_number: nil)
 end
 
 
@@ -96,6 +96,22 @@ def handle_continue(uid)
   end
 end
 
+
+# A helper method that handles the list option
+def handle_list
+  offers = completed_records
+  if offers.length == 0
+    puts "No offers found."
+  else
+    puts "Found %d offer(s)" % offers.length
+    for offer in offers
+      puts "%s:%s" % [offer.uid, offer.title]
+    end
+  end
+  exit
+end
+
+
 # A helper method for parsing args passed to process
 def parse_args(first, second)
     if first.nil?
@@ -105,15 +121,9 @@ def parse_args(first, second)
     # first param should be one of the known params
     if ['new', 'list', 'continue'].include? first
       if first.eql? "list"
-        offers = completed_records
-        if offers == 0
-          puts "No offers found."
-        else
-          puts "Found %d offer(s)" % offers
-        end
-        exit
+        handle_list()
       elsif first.eql? "new"
-        handle_new(first)
+        handle_new()
       else
         return handle_continue(second)
       end
