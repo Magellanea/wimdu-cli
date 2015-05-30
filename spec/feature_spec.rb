@@ -52,8 +52,24 @@ describe "Wimdu CLI" do
       type "123015"
       expect(process.output).to include("Great job!")
     end
+  end
+  
+  describe "continue" do
+    let(:cmd) { "#{exe} new" }
+    let(:continue_cmd) { "#{exe} continue " }
 
-
-    # Please extend!
+    it "make sure that we can continue on the last step" do
+      process = run_interactive(cmd)
+      expect(process.output).to include("Starting with new property")
+      # we get the uid
+      start_idx = process.output.index('property')+ 'property'.length
+      uid = process.output[start_idx..-1].strip
+      type "My title"
+      # we now close
+      close_input()
+      process = run_interactive(continue_cmd+uid)
+      expect(process.output).to include("Address: ")
+      
+    end   
   end
 end
